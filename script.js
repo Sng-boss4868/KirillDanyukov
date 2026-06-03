@@ -81,38 +81,46 @@ let currentQualitySrc = '';
 let isDragging = false;
 
 // ─── VIDEO QUALITY CONFIG ────────────────────────────────────────────────────
+// webm  → used for playback (smaller, faster start, native browser format)
+// mp4   → used for download
+// localOnly → hide online (file >100MB, not on GitHub)
 const VIDEO_QUALITIES = {
   'Видео/Видео 1.mp4': [
-    { label: '1080p (оригинал)', src: 'Видео/Видео 1.mp4' },
-    { label: '360p',             src: 'Видео/Видео 1_360p.mp4' },
+    { label: '1080p',  webm: 'Видео/Видео 1.webm',      mp4: 'Видео/Видео 1.mp4' },
+    { label: '360p',   webm: 'Видео/Видео 1_360p.webm', mp4: 'Видео/Видео 1_360p.mp4' },
   ],
   'Видео/Видео 2.mp4': [
-    { label: '4K (оригинал)',    src: 'Видео/Видео 2.mp4' },
-    { label: '720p',             src: 'Видео/Видео 2_720p.mp4' },
-    { label: '360p',             src: 'Видео/Видео 2_360p.mp4' },
+    { label: '4K',     webm: 'Видео/Видео 2.webm',      mp4: 'Видео/Видео 2.mp4' },
+    { label: '720p',   webm: 'Видео/Видео 2_720p.webm', mp4: 'Видео/Видео 2_720p.mp4' },
+    { label: '360p',   webm: 'Видео/Видео 2_360p.webm', mp4: 'Видео/Видео 2_360p.mp4' },
   ],
   'Видео/Видео 3.mp4': [
-    { label: '1080p (оригинал)', src: 'Видео/Видео 3.mp4',      localOnly: true },
-    { label: '360p',             src: 'Видео/Видео 3_360p.mp4' },
+    { label: '1080p',  webm: null,                       mp4: 'Видео/Видео 3.mp4',      localOnly: true },
+    { label: '720p',   webm: 'Видео/Видео 3_720p.webm', mp4: 'Видео/Видео 3_720p.mp4' },
+    { label: '360p',   webm: 'Видео/Видео 3_360p.webm', mp4: 'Видео/Видео 3_360p.mp4' },
   ],
   'Видео/Видео 4.mp4': [
-    { label: '1080p (оригинал)', src: 'Видео/Видео 4.mp4' },
-    { label: '360p',             src: 'Видео/Видео 4_360p.mp4' },
+    { label: '1080p',  webm: 'Видео/Видео 4.webm',      mp4: 'Видео/Видео 4.mp4' },
+    { label: '360p',   webm: 'Видео/Видео 4_360p.webm', mp4: 'Видео/Видео 4_360p.mp4' },
   ],
   'Видео/Видео 5.mp4': [
-    { label: '1080p (оригинал)', src: 'Видео/Видео 5.mp4',      localOnly: true },
-    { label: '360p',             src: 'Видео/Видео 5_360p.mp4' },
+    { label: '1080p',  webm: null,                       mp4: 'Видео/Видео 5.mp4',      localOnly: true },
+    { label: '720p',   webm: 'Видео/Видео 5_720p.webm', mp4: 'Видео/Видео 5_720p.mp4' },
+    { label: '360p',   webm: 'Видео/Видео 5_360p.webm', mp4: 'Видео/Видео 5_360p.mp4' },
   ],
   'Видео/Видео 6.mp4': [
-    { label: '1080p (оригинал)', src: 'Видео/Видео 6.mp4' },
-    { label: '360p',             src: 'Видео/Видео 6_360p.mp4' },
+    { label: '1080p',  webm: 'Видео/Видео 6.webm',      mp4: 'Видео/Видео 6.mp4' },
+    { label: '360p',   webm: 'Видео/Видео 6_360p.webm', mp4: 'Видео/Видео 6_360p.mp4' },
   ],
   'Видео/Видео 7.mp4': [
-    { label: '4K (оригинал)',    src: 'Видео/Видео 7.mp4',      localOnly: true },
-    { label: '720p',             src: 'Видео/Видео 7_720p.mp4' },
-    { label: '360p',             src: 'Видео/Видео 7_360p.mp4' },
+    { label: '4K',     webm: null,                       mp4: 'Видео/Видео 7.mp4',      localOnly: true },
+    { label: '720p',   webm: 'Видео/Видео 7_720p.webm', mp4: 'Видео/Видео 7_720p.mp4' },
+    { label: '360p',   webm: 'Видео/Видео 7_360p.webm', mp4: 'Видео/Видео 7_360p.mp4' },
   ],
 };
+
+// Track current download source (MP4) separately from playback source (WebM)
+let currentDownloadSrc = '';
 
 // ─── OPEN / CLOSE PLAYER ─────────────────────────────────────────────────────
 document.querySelectorAll('.work-card').forEach(card => {
@@ -120,13 +128,17 @@ document.querySelectorAll('.work-card').forEach(card => {
 });
 
 function openPlayer(src) {
-  currentVideoSrc   = src;
-  const qualities   = VIDEO_QUALITIES[src] || [{ label: 'Оригинал', src }];
-  // If running online (non-file://), skip localOnly sources
-  const isOnline    = location.protocol !== 'file:';
-  const bestQ       = isOnline ? (qualities.find(q => !q.localOnly) || qualities[0]) : qualities[0];
-  currentQualitySrc = bestQ.src;
-  mainSrc.src = bestQ.src;
+  currentVideoSrc = src;
+  const qualities = VIDEO_QUALITIES[src] || [{ label: 'Оригинал', webm: null, mp4: src }];
+  const isOnline  = location.protocol !== 'file:';
+  const available = isOnline ? qualities.filter(q => !q.localOnly) : qualities;
+  const bestQ     = available[0];
+
+  currentDownloadSrc = bestQ.mp4;
+  const playSrc      = bestQ.webm || bestQ.mp4;
+  currentQualitySrc  = playSrc;
+
+  mainVideo.src = playSrc;
   mainVideo.load();
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -258,40 +270,43 @@ document.addEventListener('click', () => {
 });
 
 function buildQualityMenu(baseSrc) {
-  const allQ      = VIDEO_QUALITIES[baseSrc] || [{ label: 'Оригинал', src: baseSrc }];
+  const allQ      = VIDEO_QUALITIES[baseSrc] || [{ label: 'Оригинал', webm: null, mp4: baseSrc }];
   const isOnline  = location.protocol !== 'file:';
   const qualities = isOnline ? allQ.filter(q => !q.localOnly) : allQ;
   qualityMenu.innerHTML = '';
+
   qualities.forEach((q, i) => {
     const btn = document.createElement('button');
     btn.textContent = q.label;
     if (i === 0) btn.classList.add('active');
+
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      if (currentQualitySrc === q.src) { qualityMenu.classList.remove('open'); return; }
+      const playSrc = q.webm || q.mp4;
+      if (currentQualitySrc === playSrc) { qualityMenu.classList.remove('open'); return; }
+
       const wasPlaying = !mainVideo.paused;
       const savedTime  = mainVideo.currentTime;
-      currentQualitySrc = q.src;
-      mainVideo.src = q.src;
+      currentQualitySrc  = playSrc;
+      currentDownloadSrc = q.mp4;
+
+      mainVideo.src = playSrc;
       mainVideo.load();
       mainVideo.addEventListener('loadedmetadata', () => {
         mainVideo.currentTime = savedTime;
         if (wasPlaying) mainVideo.play();
       }, { once: true });
-      // Update button label with short quality name
-      const shortLabel = q.label.includes('4K') ? '4K' : q.label.includes('720') ? '720p' : q.label.includes('360') ? '360p' : 'HD';
-      qualityBtn.textContent = shortLabel;
+
+      qualityBtn.textContent = q.label;
       qualityMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       qualityMenu.classList.remove('open');
-      // update download to current quality
-      currentVideoSrc = q.src;
     });
+
     qualityMenu.appendChild(btn);
   });
-  // Set button label to first quality's short name
-  const first = qualities[0].label;
-  qualityBtn.textContent = first.includes('4K') ? '4K' : 'HD';
+
+  qualityBtn.textContent = qualities[0]?.label || 'HD';
 }
 
 speedMenu.querySelectorAll('button').forEach(btn => {
@@ -306,12 +321,13 @@ speedMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// Download (current source)
+// Download — always use MP4 (not WebM)
 downloadBtn.addEventListener('click', () => {
-  if (!currentVideoSrc) return;
+  const dl = currentDownloadSrc || currentVideoSrc;
+  if (!dl) return;
   const a = document.createElement('a');
-  a.href     = currentVideoSrc;
-  a.download = currentVideoSrc.split('/').pop();
+  a.href     = dl;
+  a.download = dl.split('/').pop();
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

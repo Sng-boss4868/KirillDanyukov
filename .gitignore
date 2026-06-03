@@ -3,5 +3,7 @@
 Видео/Видео 5.mp4
 Видео/Видео 7.mp4
 
-# Служебная папка Claude Code
+# Служебные файлы
 .claude/
+ffmpeg2pass-0.log
+ffmpeg2pass-0.log.mbtree
