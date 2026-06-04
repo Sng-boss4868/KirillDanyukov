@@ -68,58 +68,25 @@ const volumeSlider = document.getElementById('volumeSlider');
 const speedBtn  = document.getElementById('speedBtn');
 const speedMenu = document.getElementById('speedMenu');
 
-const qualityBtn  = document.getElementById('qualityBtn');
-const qualityMenu = document.getElementById('qualityMenu');
-
 const downloadBtn    = document.getElementById('downloadBtn');
 const fullscreenBtn  = document.getElementById('fullscreenBtn');
 const iconFs         = fullscreenBtn.querySelector('.icon-fs');
 const iconFsExit     = fullscreenBtn.querySelector('.icon-fs-exit');
 
 let currentVideoSrc  = '';
-let currentQualitySrc = '';
 let isDragging = false;
 
-// ─── VIDEO QUALITY CONFIG ────────────────────────────────────────────────────
-// webm  → used for playback (smaller, faster start, native browser format)
-// mp4   → used for download
-// localOnly → hide online (file >100MB, not on GitHub)
-const VIDEO_QUALITIES = {
-  'Видео/Видео 1.mp4': [
-    { label: '1080p',  webm: 'Видео/Видео 1.webm',      mp4: 'Видео/Видео 1.mp4' },
-    { label: '360p',   webm: 'Видео/Видео 1_360p.webm', mp4: 'Видео/Видео 1_360p.mp4' },
-  ],
-  'Видео/Видео 2.mp4': [
-    { label: '4K',     webm: 'Видео/Видео 2.webm',      mp4: 'Видео/Видео 2.mp4' },
-    { label: '720p',   webm: 'Видео/Видео 2_720p.webm', mp4: 'Видео/Видео 2_720p.mp4' },
-    { label: '360p',   webm: 'Видео/Видео 2_360p.webm', mp4: 'Видео/Видео 2_360p.mp4' },
-  ],
-  'Видео/Видео 3.mp4': [
-    { label: '1080p',  webm: null,                       mp4: 'Видео/Видео 3.mp4',      localOnly: true },
-    { label: '720p',   webm: 'Видео/Видео 3_720p.webm', mp4: 'Видео/Видео 3_720p.mp4' },
-    { label: '360p',   webm: 'Видео/Видео 3_360p.webm', mp4: 'Видео/Видео 3_360p.mp4' },
-  ],
-  'Видео/Видео 4.mp4': [
-    { label: '1080p',  webm: 'Видео/Видео 4.webm',      mp4: 'Видео/Видео 4.mp4' },
-    { label: '360p',   webm: 'Видео/Видео 4_360p.webm', mp4: 'Видео/Видео 4_360p.mp4' },
-  ],
-  'Видео/Видео 5.mp4': [
-    { label: '1080p',  webm: null,                       mp4: 'Видео/Видео 5.mp4',      localOnly: true },
-    { label: '720p',   webm: 'Видео/Видео 5_720p.webm', mp4: 'Видео/Видео 5_720p.mp4' },
-    { label: '360p',   webm: 'Видео/Видео 5_360p.webm', mp4: 'Видео/Видео 5_360p.mp4' },
-  ],
-  'Видео/Видео 6.mp4': [
-    { label: '1080p',  webm: 'Видео/Видео 6.webm',      mp4: 'Видео/Видео 6.mp4' },
-    { label: '360p',   webm: 'Видео/Видео 6_360p.webm', mp4: 'Видео/Видео 6_360p.mp4' },
-  ],
-  'Видео/Видео 7.mp4': [
-    { label: '4K',     webm: null,                       mp4: 'Видео/Видео 7.mp4',      localOnly: true },
-    { label: '720p',   webm: 'Видео/Видео 7_720p.webm', mp4: 'Видео/Видео 7_720p.mp4' },
-    { label: '360p',   webm: 'Видео/Видео 7_360p.webm', mp4: 'Видео/Видео 7_360p.mp4' },
-  ],
+const VIDEO_LIBRARY = {
+  'Видео/Видео 1_1080p.webm': 'Видео/Видео 1_1080p.webm',
+  'Видео/Видео 2_1080p.webm': 'Видео/Видео 2_1080p.webm',
+  'Видео/Видео 3_1080p.webm': 'Видео/Видео 3_1080p.webm',
+  'Видео/Видео 4_1080p.webm': 'Видео/Видео 4_1080p.webm',
+  'Видео/Видео 5_1080p.webm': 'Видео/Видео 5_1080p.webm',
+  'Видео/Видео 6_1080p.webm': 'Видео/Видео 6_1080p.webm',
+  'Видео/Видео 7_1080p.webm': 'Видео/Видео 7_1080p.webm',
+  'Видео/Видео 8_1080p.webm': 'Видео/Видео 8_1080p.webm',
 };
 
-// Track current download source (MP4) separately from playback source (WebM)
 let currentDownloadSrc = '';
 
 // ─── OPEN / CLOSE PLAYER ─────────────────────────────────────────────────────
@@ -129,30 +96,40 @@ document.querySelectorAll('.work-card').forEach(card => {
 
 function openPlayer(src) {
   currentVideoSrc = src;
-  const qualities = VIDEO_QUALITIES[src] || [{ label: 'Оригинал', webm: null, mp4: src }];
-  const isOnline  = location.protocol !== 'file:';
-  const available = isOnline ? qualities.filter(q => !q.localOnly) : qualities;
-  const bestQ     = available[0];
+  const playSrc = VIDEO_LIBRARY[src] || src;
 
-  currentDownloadSrc = bestQ.mp4;
-  const playSrc      = bestQ.webm || bestQ.mp4;
-  currentQualitySrc  = playSrc;
+  currentDownloadSrc = playSrc;
 
+  // Set the source elements
+  if (mainSrc) {
+    mainSrc.src = playSrc;
+    mainSrc.type = 'video/webm';
+  }
   mainVideo.src = playSrc;
+  
   mainVideo.load();
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
-  mainVideo.play();
-  buildQualityMenu(src);
+  
+  showControls(); // Initialize controls visibility and timers
+
+  const playPromise = mainVideo.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(error => {
+      console.warn("Video playback failed or was interrupted:", error);
+    });
+  }
 }
 
 function closePlayer() {
   mainVideo.pause();
   mainVideo.src = '';
+  if (mainSrc) mainSrc.src = '';
   modal.classList.remove('active');
   document.body.style.overflow = '';
   speedMenu.classList.remove('open');
-  qualityMenu.classList.remove('open');
+  playerWrap.classList.remove('hide-controls');
+  clearTimeout(controlsHideTimer);
 }
 
 modalClose.addEventListener('click', closePlayer);
@@ -162,8 +139,19 @@ document.addEventListener('keydown', e => {
 });
 
 // Play / Pause
-mainVideo.addEventListener('click', togglePlay);
-playPauseBtn.addEventListener('click', togglePlay);
+mainVideo.addEventListener('click', e => {
+  if (playerWrap.classList.contains('hide-controls')) {
+    e.preventDefault();
+    e.stopPropagation();
+    showControls();
+  } else {
+    togglePlay();
+  }
+});
+playPauseBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  togglePlay();
+});
 
 function togglePlay() {
   if (mainVideo.paused) {
@@ -253,61 +241,15 @@ function updateVolIcon() {
 // Speed
 speedBtn.addEventListener('click', e => {
   e.stopPropagation();
-  qualityMenu.classList.remove('open');
   speedMenu.classList.toggle('open');
 });
 
-// Quality
-qualityBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  speedMenu.classList.remove('open');
-  qualityMenu.classList.toggle('open');
-});
-
 document.addEventListener('click', () => {
-  speedMenu.classList.remove('open');
-  qualityMenu.classList.remove('open');
+  if (speedMenu.classList.contains('open')) {
+    speedMenu.classList.remove('open');
+    showControls();
+  }
 });
-
-function buildQualityMenu(baseSrc) {
-  const allQ      = VIDEO_QUALITIES[baseSrc] || [{ label: 'Оригинал', webm: null, mp4: baseSrc }];
-  const isOnline  = location.protocol !== 'file:';
-  const qualities = isOnline ? allQ.filter(q => !q.localOnly) : allQ;
-  qualityMenu.innerHTML = '';
-
-  qualities.forEach((q, i) => {
-    const btn = document.createElement('button');
-    btn.textContent = q.label;
-    if (i === 0) btn.classList.add('active');
-
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const playSrc = q.webm || q.mp4;
-      if (currentQualitySrc === playSrc) { qualityMenu.classList.remove('open'); return; }
-
-      const wasPlaying = !mainVideo.paused;
-      const savedTime  = mainVideo.currentTime;
-      currentQualitySrc  = playSrc;
-      currentDownloadSrc = q.mp4;
-
-      mainVideo.src = playSrc;
-      mainVideo.load();
-      mainVideo.addEventListener('loadedmetadata', () => {
-        mainVideo.currentTime = savedTime;
-        if (wasPlaying) mainVideo.play();
-      }, { once: true });
-
-      qualityBtn.textContent = q.label;
-      qualityMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      qualityMenu.classList.remove('open');
-    });
-
-    qualityMenu.appendChild(btn);
-  });
-
-  qualityBtn.textContent = qualities[0]?.label || 'HD';
-}
 
 speedMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', e => {
@@ -318,10 +260,11 @@ speedMenu.querySelectorAll('button').forEach(btn => {
     speedMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     speedMenu.classList.remove('open');
+    showControls();
   });
 });
 
-// Download — always use MP4 (not WebM)
+// Download
 downloadBtn.addEventListener('click', () => {
   const dl = currentDownloadSrc || currentVideoSrc;
   if (!dl) return;
@@ -333,10 +276,37 @@ downloadBtn.addEventListener('click', () => {
   document.body.removeChild(a);
 });
 
-// Fullscreen
+// Fullscreen and Controls Auto-hide
 const playerWrap = mainVideo.closest('.player-wrap');
-let fsHideTimer  = null;
 let isInFs       = false;
+let controlsHideTimer = null;
+
+function showControls() {
+  playerWrap.classList.remove('hide-controls');
+  clearTimeout(controlsHideTimer);
+  
+  const isSpeedMenuOpen = speedMenu && speedMenu.classList.contains('open');
+  if (!mainVideo.paused && !isSpeedMenuOpen) {
+    controlsHideTimer = setTimeout(() => {
+      if (!mainVideo.paused && (!speedMenu || !speedMenu.classList.contains('open'))) {
+        playerWrap.classList.add('hide-controls');
+      }
+    }, 3000);
+  }
+}
+
+// Reset timer on user activity inside playerWrap
+playerWrap.addEventListener('mousemove', showControls);
+playerWrap.addEventListener('touchstart', showControls, { passive: true });
+playerWrap.addEventListener('touchmove', showControls, { passive: true });
+playerWrap.addEventListener('click', showControls);
+
+// Also show controls when video is played/paused
+mainVideo.addEventListener('play', showControls);
+mainVideo.addEventListener('pause', () => {
+  playerWrap.classList.remove('hide-controls');
+  clearTimeout(controlsHideTimer);
+});
 
 fullscreenBtn.addEventListener('click', () => {
   if (!isInFs) {
@@ -383,46 +353,22 @@ function enterFsMode() {
   isInFs = true;
   playerWrap.classList.add('in-fs');
   updateFsIcon(true);
-  playerWrap.addEventListener('mousemove',  showFsControls);
-  playerWrap.addEventListener('touchstart', showFsControls, { passive: true });
-  playerWrap.addEventListener('click',      showFsControls);
-  showFsControls();   // immediately show controls on enter
+  showControls();   // immediately show controls on enter
 }
 
+// Leave Fullscreen
 function leaveFsMode() {
   isInFs = false;
-  playerWrap.classList.remove('in-fs', 'show-ctrl');
+  playerWrap.classList.remove('in-fs');
   updateFsIcon(false);
-  playerWrap.removeEventListener('mousemove',  showFsControls);
-  playerWrap.removeEventListener('touchstart', showFsControls);
-  playerWrap.removeEventListener('click',      showFsControls);
-  clearTimeout(fsHideTimer);
   document.body.style.overflow = '';
+  showControls();
 }
 
 function updateFsIcon(inFs) {
   iconFs.style.display     = inFs ? 'none' : '';
   iconFsExit.style.display = inFs ? ''     : 'none';
 }
-
-function showFsControls() {
-  playerWrap.classList.add('show-ctrl');
-  clearTimeout(fsHideTimer);
-  // Auto-hide only when playing
-  if (!mainVideo.paused) {
-    fsHideTimer = setTimeout(() => {
-      if (!mainVideo.paused) playerWrap.classList.remove('show-ctrl');
-    }, 3200);
-  }
-}
-
-// Keep controls visible while paused
-mainVideo.addEventListener('pause', () => {
-  if (isInFs) { playerWrap.classList.add('show-ctrl'); clearTimeout(fsHideTimer); }
-});
-mainVideo.addEventListener('play', () => {
-  if (isInFs) showFsControls();
-});
 
 // Keyboard shortcuts inside modal
 document.addEventListener('keydown', e => {
@@ -434,19 +380,8 @@ document.addEventListener('keydown', e => {
   if (e.code === 'KeyM')       muteBtn.click();
 });
 
-// ─── CAROUSEL PAUSE ON HOVER ─────────────────────────────────────────────────
-// (handled via CSS :hover — pause-state already in styles.css)
-
 // ─── VIDEO THUMBNAILS ────────────────────────────────────────────────────────
-// Seek work-preview videos to 1s for a representative thumbnail
-document.querySelectorAll('.work-preview').forEach(v => {
-  v.addEventListener('loadedmetadata', () => {
-    v.currentTime = Math.min(1, v.duration * 0.05);
-  });
-  v.addEventListener('error', () => {
-    // If video fails to load, thumbnail area keeps its background color
-  });
-});
+// Previews/covers are handled natively using `#t=0.1` in the HTML to load preview frames instantly and efficiently.
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 function fmtTime(secs) {

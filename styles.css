@@ -626,6 +626,16 @@ body {
   border: 1.5px solid var(--line);
   border-radius: 6px;
   padding: 10px 14px;
+  transition: opacity 0.3s ease;
+}
+
+.player-wrap.hide-controls .player-controls {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.player-wrap.hide-controls {
+  cursor: none;
 }
 
 /* Progress */
@@ -922,6 +932,7 @@ body {
   .who-grid { grid-template-columns: repeat(2, 1fr); }
   .carousel-track { gap: 28px; }
   .carousel-item { width: 240px; height: 240px; }
+  .tykni-wrap { display: none !important; }
 }
 
 /* ================================================================
@@ -959,6 +970,62 @@ body {
   /* Player */
   .controls-row { flex-wrap: wrap; gap: 6px; }
   .volume-slider { width: 55px; }
+
+  /* Player overlay styles on tablet/mobile */
+  .player-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  #mainVideo {
+    margin-bottom: 0;
+    border-radius: 4px;
+  }
+  .player-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9)) !important;
+    border: none !important;
+    border-radius: 0 0 4px 4px !important;
+    padding: 24px 12px 10px !important;
+    color: #fff !important;
+  }
+  .player-controls .ctrl-btn {
+    border-color: rgba(255,255,255,0.3) !important;
+    color: #fff !important;
+  }
+  .player-controls .ctrl-btn:hover {
+    background: rgba(255,255,255,0.15) !important;
+  }
+  .player-controls .ctrl-btn svg {
+    filter: invert(1) brightness(1.5) !important;
+  }
+  .player-controls .time-display {
+    color: rgba(255,255,255,0.9) !important;
+  }
+  .player-controls .progress-bar-bg {
+    background: rgba(255,255,255,0.3) !important;
+  }
+  .player-controls .speed-btn {
+    color: #fff !important;
+  }
+  .player-controls .volume-slider {
+    background: rgba(255,255,255,0.3) !important;
+  }
+  .player-controls .speed-menu {
+    background: rgba(25,20,15,0.95) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+  }
+  .player-controls .speed-menu button {
+    color: #eee !important;
+  }
+  .player-controls .speed-menu button:hover {
+    background: rgba(255,255,255,0.15) !important;
+  }
 }
 
 /* ================================================================
@@ -1017,4 +1084,59 @@ body {
   .sketch-frame img { width: 190px; height: 230px; }
   .who-grid { max-width: 100%; }
   .hero-name { font-size: 2rem; }
+}
+
+/* ================================================================
+   RESPONSIVE — LANDSCAPE MOBILE PLAYER (YouTube-like Fullscreen)
+   ================================================================ */
+@media (max-height: 480px) and (orientation: landscape) {
+  .modal-overlay.active {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .modal-container {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #000 !important;
+    transform: none !important;
+  }
+  .player-wrap {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+  }
+  #mainVideo {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .modal-close {
+    top: 12px !important;
+    right: 12px !important;
+    width: 38px !important;
+    height: 38px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50% !important;
+    z-index: 100 !important;
+  }
+  .modal-close svg {
+    filter: invert(1) brightness(1.5) !important;
+  }
+  .player-controls {
+    border-radius: 0 !important;
+    padding: 30px 16px 12px !important;
+  }
 }
