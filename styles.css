@@ -91,13 +91,13 @@ body {
 .sketch-frame:hover { transform: rotate(0deg); }
 .sketch-frame img {
   display: block;
-  width: 320px;
-  height: 380px;
+  width: 420px;
+  height: 500px;
   object-fit: cover;
   border-radius: 2px;
   cursor: pointer;
 }
-.pencil-underline { display: block; margin-top: 10px; width: 220px; }
+.pencil-underline { display: block; margin-top: 10px; width: 280px; }
 
 .hero-text { flex: 1; }
 .hero-name {
@@ -111,12 +111,12 @@ body {
   font-size: 1.15rem;
   margin-bottom: 14px;
   color: #4a3828;
-  max-width: 480px;
+  max-width: 380px; /* Compress content area width to make text block narrower */
 }
 .hero-since {
   font-size: 1rem;
   color: var(--pencil);
-  max-width: 440px;
+  max-width: 340px; /* Compress content area width to make text block narrower */
 }
 
 .scroll-hint {
@@ -937,8 +937,9 @@ body {
   /* Hero */
   .hero-section { min-height: auto; padding: 60px 20px 50px; }
   .hero-content { flex-direction: column; gap: 28px; text-align: center; }
-  .sketch-frame img { width: 260px; height: 300px; }
-  .name-underline, .pencil-underline { margin: 0 auto; }
+  .sketch-frame img { width: 300px; height: 350px; }
+  .name-underline { margin: 0 auto; }
+  .pencil-underline { margin: 0 auto; width: 200px; } /* Center the underline under larger photo on tablet */
   .scroll-hint { justify-content: center; }
   .hero-name { font-size: clamp(2rem, 7vw, 3.2rem); }
 
@@ -985,7 +986,7 @@ body {
   /* Hero */
   .hero-section { padding: 50px 14px 40px; }
   .sketch-frame { transform: none !important; }
-  .sketch-frame img { width: 230px; height: 270px; }
+  .sketch-frame img { width: 250px; height: 295px; }
   .hero-name { font-size: 2.4rem; }
   .hero-desc, .hero-since { font-size: 1rem; }
 
@@ -1028,7 +1029,7 @@ body {
    RESPONSIVE — SMALL MOBILE  (<380px)
    ================================================================ */
 @media (max-width: 379px) {
-  .sketch-frame img { width: 190px; height: 230px; }
+  .sketch-frame img { width: 210px; height: 250px; }
   .who-grid { max-width: 100%; }
   .hero-name { font-size: 2rem; }
 }
