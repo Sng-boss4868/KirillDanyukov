@@ -108,6 +108,12 @@ function openPlayer(src) {
   }
   mainVideo.src = playSrc;
   
+  // Reset pinch-to-zoom properties
+  currentScale = 1.0;
+  panX = 0;
+  panY = 0;
+  mainVideo.style.transform = '';
+  
   mainVideo.load();
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -141,6 +147,12 @@ function closePlayer() {
   speedMenu.classList.remove('open');
   playerWrap.classList.remove('hide-controls');
   clearTimeout(controlsHideTimer);
+  
+  // Reset pinch-to-zoom properties
+  currentScale = 1.0;
+  panX = 0;
+  panY = 0;
+  mainVideo.style.transform = '';
 }
 
 modalClose.addEventListener('click', closePlayer);
@@ -426,3 +438,85 @@ if ('IntersectionObserver' in window) {
     io.observe(el);
   });
 }
+
+// ─── MOBILE PINCH-TO-ZOOM & PANNING (YouTube-like) ───────────────────────────
+let currentScale = 1.0;
+let startScale = 1.0;
+let startDistance = 0;
+let panX = 0;
+let panY = 0;
+let startX = 0;
+let startY = 0;
+let isZooming = false;
+let isPanning = false;
+
+function getDistance(t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function updateVideoTransform() {
+  if (currentScale < 1.0) currentScale = 1.0;
+  
+  const videoWidth = mainVideo.offsetWidth;
+  const videoHeight = mainVideo.offsetHeight;
+  const maxPanX = ((currentScale - 1) * videoWidth) / 2;
+  const maxPanY = ((currentScale - 1) * videoHeight) / 2;
+  
+  panX = Math.max(-maxPanX, Math.min(maxPanX, panX));
+  panY = Math.max(-maxPanY, Math.min(maxPanY, panY));
+  
+  // Shift translation visually by dividing by currentScale
+  mainVideo.style.transform = `scale(${currentScale}) translate(${panX / currentScale}px, ${panY / currentScale}px)`;
+}
+
+mainVideo.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    isZooming = true;
+    isPanning = false;
+    startDistance = getDistance(e.touches[0], e.touches[1]);
+    startScale = currentScale;
+  } else if (e.touches.length === 1 && currentScale > 1.0) {
+    isPanning = true;
+    startX = e.touches[0].clientX - panX;
+    startY = e.touches[0].clientY - panY;
+  }
+}, { passive: false });
+
+mainVideo.addEventListener('touchmove', e => {
+  if (isZooming && e.touches.length === 2) {
+    e.preventDefault(); // prevent viewport scrolling while zooming
+    const dist = getDistance(e.touches[0], e.touches[1]);
+    currentScale = Math.max(1.0, Math.min(4.0, (dist / startDistance) * startScale));
+    updateVideoTransform();
+  } else if (isPanning && e.touches.length === 1) {
+    e.preventDefault(); // prevent viewport scrolling while panning
+    panX = e.touches[0].clientX - startX;
+    panY = e.touches[0].clientY - startY;
+    updateVideoTransform();
+  }
+}, { passive: false });
+
+mainVideo.addEventListener('touchend', e => {
+  if (e.touches.length < 2) {
+    isZooming = false;
+  }
+  if (e.touches.length === 0) {
+    isPanning = false;
+    // Snap back if zoom is very close to normal
+    if (currentScale < 1.05) {
+      currentScale = 1.0;
+      panX = 0;
+      panY = 0;
+      mainVideo.style.transform = '';
+    }
+  }
+});
+
+// Update bounds on window resize / orientation change
+window.addEventListener('resize', () => {
+  if (modal.classList.contains('active') && currentScale > 1.0) {
+    updateVideoTransform();
+  }
+});

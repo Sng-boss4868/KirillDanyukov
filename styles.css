@@ -660,7 +660,7 @@ body {
   border-radius: 3px;
   cursor: pointer;
   margin-bottom: 6px;
-  opacity: 0.5;
+  opacity: 0.8;
   transition: opacity 0.15s;
 }
 .progress-bar-bg:hover {
@@ -694,7 +694,7 @@ body {
   color: rgba(255, 255, 255, 0.8) !important;
   display: flex;
   gap: 4px;
-  opacity: 0.5;
+  opacity: 0.8;
   transition: opacity 0.15s;
 }
 .time-display:hover {
@@ -727,7 +727,7 @@ body {
   transition: background 0.15s, opacity 0.15s, transform 0.15s;
   padding: 4px;
   flex-shrink: 0;
-  opacity: 0.5 !important; /* 50% opacity by default */
+  opacity: 0.8 !important; /* 80% opacity by default */
 }
 .ctrl-btn:hover {
   background: rgba(255, 255, 255, 0.15) !important;
@@ -753,7 +753,7 @@ body {
   border-radius: 2px;
   outline: none;
   cursor: pointer;
-  opacity: 0.5; /* 50% opacity by default */
+  opacity: 0.8; /* 80% opacity by default */
   transition: opacity 0.15s;
 }
 .volume-wrap:hover .volume-slider,
@@ -776,7 +776,7 @@ body {
   font-family: var(--font-body);
   font-size: 0.9rem;
   color: #fff !important;
-  opacity: 0.5 !important; /* 50% opacity by default */
+  opacity: 0.8 !important; /* 80% opacity by default */
   transition: opacity 0.15s;
 }
 .speed-btn:hover {
