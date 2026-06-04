@@ -43,6 +43,7 @@ function closePhotoModal() {
 // ─── VIDEO MODAL PLAYER ───────────────────────────────────────────────────────
 
 const modal       = document.getElementById('videoModal');
+const playerWrap  = document.querySelector('.player-wrap');
 const modalClose  = document.getElementById('modalClose');
 const mainVideo   = document.getElementById('mainVideo');
 const mainSrc     = document.getElementById('mainVideoSrc');
@@ -113,6 +114,16 @@ function openPlayer(src) {
   
   showControls(); // Initialize controls visibility and timers
 
+  // Request Fullscreen immediately upon opening on both mobile and PC
+  const requestFS = playerWrap.requestFullscreen || playerWrap.webkitRequestFullscreen || playerWrap.mozRequestFullScreen || playerWrap.msRequestFullscreen;
+  if (requestFS) {
+    requestFS.call(playerWrap).catch(error => {
+      console.warn("Auto-fullscreen request failed:", error);
+    });
+  } else {
+    enterFsFallback();
+  }
+
   const playPromise = mainVideo.play();
   if (playPromise !== undefined) {
     playPromise.catch(error => {
@@ -140,13 +151,10 @@ document.addEventListener('keydown', e => {
 
 // Play / Pause
 mainVideo.addEventListener('click', e => {
-  if (playerWrap.classList.contains('hide-controls')) {
-    e.preventDefault();
-    e.stopPropagation();
-    showControls();
-  } else {
-    togglePlay();
-  }
+  // Clicking the video overlay shows controls but does NOT pause/play as requested
+  e.preventDefault();
+  e.stopPropagation();
+  showControls();
 });
 playPauseBtn.addEventListener('click', e => {
   e.stopPropagation();
@@ -277,7 +285,6 @@ downloadBtn.addEventListener('click', () => {
 });
 
 // Fullscreen and Controls Auto-hide
-const playerWrap = mainVideo.closest('.player-wrap');
 let isInFs       = false;
 let controlsHideTimer = null;
 
@@ -324,7 +331,12 @@ document.addEventListener('webkitfullscreenchange', onFsChange);
 
 function onFsChange() {
   const nativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  if (nativeFs) enterFsMode(); else leaveFsMode();
+  if (nativeFs) {
+    enterFsMode();
+  } else {
+    leaveFsMode();
+    closePlayer(); // Exiting fullscreen closes the video modal player
+  }
 }
 
 // Fallback: use fixed positioning when Fullscreen API not available
